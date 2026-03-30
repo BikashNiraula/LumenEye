@@ -17,3 +17,6 @@ source install/setup.bash
 
 # Launch the system
 ros2 launch lss_arm_controller lumeneye.launch.py
+
+# Move box to a specific position
+ros2 topic pub --once /lumeneye/box_cmd std_msgs/msg/String "data: 'goto 0.3 0'"
