@@ -1,0 +1,371 @@
+<?xml version="1.0"?>
+<robot name="lss_arm_4dof">
+
+  <!-- ===================== -->
+  <!-- Materials             -->
+  <!-- ===================== -->
+  <material name="DarkGrey">
+    <color rgba="0.3 0.3 0.3 1.0"/>
+  </material>
+
+  <!-- ===================== -->
+  <!-- World Link (Fixed Base) -->
+  <!-- ===================== -->
+  <link name="world"/>
+
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="lss_arm_link_0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 0 (Base)         -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_0.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_0.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0.00785 0.0256" rpy="0 0 0"/>
+      <mass value="0.0717"/>
+      <inertia ixx="3.06e-05" ixy="0" ixz="0" iyy="2.37e-05" iyz="2.14e-07" izz="4.37e-05"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 1 (Base Rotation) -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_1" type="revolute">
+    <parent link="lss_arm_link_0"/>
+    <child link="lss_arm_link_1"/>
+    <origin xyz="0 0 0.0427" rpy="1.5708 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 1                -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_1">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_1.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_1.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0.0348 0.00015" rpy="0 0 0"/>
+      <mass value="0.0629"/>
+      <inertia ixx="2.5e-05" ixy="0" ixz="0" iyy="1.8e-05" iyz="0" izz="2.5e-05"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 2 (Shoulder)    -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_2" type="revolute">
+    <parent link="lss_arm_link_1"/>
+    <child link="lss_arm_link_2"/>
+    <origin xyz="0 0.0588 0" rpy="0 0 -1.3621"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.18" upper="2.18" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 2                -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_2">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_2.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_2.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.075 0.027 0" rpy="0 0 0"/>
+      <mass value="0.0856"/>
+      <inertia ixx="2.0e-05" ixy="0" ixz="0" iyy="1.5e-04" iyz="0" izz="1.5e-04"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 3 (Elbow)       -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_3" type="revolute">
+    <parent link="lss_arm_link_2"/>
+    <child link="lss_arm_link_3"/>
+    <origin xyz="-0.12954806230389 0.0533975613048809 0" rpy="0 0 1.02985068022995"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.92" upper="1.57" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 3                -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_3">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_3.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_3.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.077 0.027 0" rpy="0 0 0"/>
+      <mass value="0.0752"/>
+      <inertia ixx="1.8e-05" ixy="0" ixz="0" iyy="1.2e-04" iyz="0" izz="1.2e-04"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 4 (Wrist)       -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_4" type="revolute">
+    <parent link="lss_arm_link_3"/>
+    <child link="lss_arm_link_4"/>
+    <origin xyz="0.1543 0.0532 0" rpy="0 0 0.3323"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.0" upper="2.0" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 4 (Gripper Base) -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_4">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_4_4dof.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_4_4dof.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.025 0 0" rpy="0 0 0"/>
+      <mass value="0.045"/>
+      <inertia ixx="1.0e-05" ixy="0" ixz="0" iyy="1.0e-05" iyz="0" izz="1.0e-05"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 5 (Gripper Left) -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_5" type="revolute">
+    <parent link="lss_arm_link_4"/>
+    <child link="lss_arm_finger_l"/>
+    <origin xyz="0.0508 -0.00274 -0.0124" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.8" effort="1.45" velocity="6.283"/>
+    <dynamics damping="0.05" friction="0.05"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Left Finger           -->
+  <!-- ===================== -->
+  <link name="lss_arm_finger_l">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/finger_l.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/finger_l.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.02 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1.0e-06" ixy="0" ixz="0" iyy="1.0e-06" iyz="0" izz="1.0e-06"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 6 (Gripper Right - Mimic) -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_6" type="revolute">
+    <parent link="lss_arm_link_4"/>
+    <child link="lss_arm_finger_r"/>
+    <origin xyz="0.0508 -0.00274 0.0124" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.8" upper="0" effort="1.45" velocity="6.283"/>
+    <dynamics damping="0.05" friction="0.05"/>
+    <mimic joint="lss_arm_joint_5" multiplier="-1" offset="0"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Right Finger          -->
+  <!-- ===================== -->
+  <link name="lss_arm_finger_r">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/finger_r.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/finger_r.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.02 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1.0e-06" ixy="0" ixz="0" iyy="1.0e-06" iyz="0" izz="1.0e-06"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- End Effector          -->
+  <!-- ===================== -->
+  <joint name="lss_arm_ee_joint" type="fixed">
+    <parent link="lss_arm_link_4"/>
+    <child link="lss_arm_ee"/>
+    <origin xyz="0.09 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="lss_arm_ee"/>
+
+  <!-- ============================================ -->
+  <!-- GAZEBO CLASSIC SPECIFIC CONFIGURATIONS      -->
+  <!-- ============================================ -->
+
+  <!-- Gazebo Colors -->
+  <gazebo reference="lss_arm_link_0">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_1">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_2">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_3">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_4">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_finger_l">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_finger_r">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+
+
+  <!-- ============================================ -->
+  <!-- ROS2 CONTROL HARDWARE INTERFACE             -->
+  <!-- ============================================ -->
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="lss_arm_joint_1">
+      <command_interface name="position">
+        <param name="min">-3.14159</param>
+        <param name="max">3.14159</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+       
+    </joint>
+    <joint name="lss_arm_joint_2">
+      <command_interface name="position">
+        <param name="min">-2.18</param>
+        <param name="max">2.18</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+       
+    </joint>
+    <joint name="lss_arm_joint_3">
+      <command_interface name="position">
+        <param name="min">-1.92</param>
+        <param name="max">1.57</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+       
+    </joint>
+    <joint name="lss_arm_joint_4">
+      <command_interface name="position">
+        <param name="min">-2.0</param>
+        <param name="max">2.0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+       
+    </joint>
+    <joint name="lss_arm_joint_5">
+      <command_interface name="position">
+        <param name="min">0</param>
+        <param name="max">0.8</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+       
+    </joint>
+    <joint name="lss_arm_joint_6">
+      <command_interface name="position">
+        <param name="min">-0.8</param>
+        <param name="max">0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+       
+    </joint>
+  </ros2_control>
+
+<gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <parameters>/root/robotics/install/lss_arm_gazebo/share/lss_arm_gazebo/config/ros2_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+  
+</robot>

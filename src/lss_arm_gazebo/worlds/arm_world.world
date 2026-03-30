@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="arm_world">
+
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>0.9 -0.9 0.7 0 0.45 2.3</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros><namespace>/gazebo</namespace></ros>
+      <update_rate>10.0</update_rate>
+    </plugin>
+
+    <!-- Soldering iron lying flat, tip at world (0.35, 0, 0.012) -->
+    <model name="precision_tool">
+      <static>true</static>
+      <pose>0.35 0.0 0.0 0 0 0</pose>
+      <link name="grip">
+        <pose>-0.09 0 0.012 0 1.5708 0</pose>
+        <visual name="v">
+          <geometry><cylinder><radius>0.012</radius><length>0.13</length></cylinder></geometry>
+          <material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+        </visual>
+        <collision name="c">
+          <geometry><cylinder><radius>0.012</radius><length>0.13</length></cylinder></geometry>
+        </collision>
+        <inertial><mass>0.08</mass></inertial>
+      </link>
+      <link name="collar">
+        <pose>-0.015 0 0.012 0 1.5708 0</pose>
+        <visual name="v">
+          <geometry><cylinder><radius>0.014</radius><length>0.018</length></cylinder></geometry>
+          <material><ambient>0.9 0.5 0.05 1</ambient><diffuse>0.95 0.55 0.08 1</diffuse></material>
+        </visual>
+        <collision name="c">
+          <geometry><cylinder><radius>0.014</radius><length>0.018</length></cylinder></geometry>
+        </collision>
+        <inertial><mass>0.01</mass></inertial>
+      </link>
+      <link name="barrel">
+        <pose>0.055 0 0.012 0 1.5708 0</pose>
+        <visual name="v">
+          <geometry><cylinder><radius>0.005</radius><length>0.12</length></cylinder></geometry>
+          <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.75 0.75 0.75 1</diffuse><specular>0.9 0.9 0.9 1</specular></material>
+        </visual>
+        <collision name="c">
+          <geometry><cylinder><radius>0.005</radius><length>0.12</length></cylinder></geometry>
+        </collision>
+        <inertial><mass>0.03</mass></inertial>
+      </link>
+      <link name="copper_tip">
+        <pose>0.130 0 0.012 0 1.5708 0</pose>
+        <visual name="v">
+          <geometry><cylinder><radius>0.003</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.7 0.4 0.1 1</ambient><diffuse>0.8 0.45 0.12 1</diffuse></material>
+        </visual>
+        <collision name="c">
+          <geometry><cylinder><radius>0.003</radius><length>0.03</length></cylinder></geometry>
+        </collision>
+        <inertial><mass>0.005</mass></inertial>
+      </link>
+      <link name="tip_dot">
+        <pose>0.148 0 0.012 0 0 0</pose>
+        <visual name="v">
+          <geometry><sphere><radius>0.008</radius></sphere></geometry>
+          <material>
+            <ambient>0.0 1.0 0.0 1</ambient>
+            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <emissive>0.0 0.7 0.0 1</emissive>
+          </material>
+        </visual>
+        <collision name="c"><geometry><sphere><radius>0.008</radius></sphere></geometry></collision>
+        <inertial><mass>0.001</mass></inertial>
+      </link>
+      <joint name="j1" type="fixed"><parent>grip</parent><child>collar</child></joint>
+      <joint name="j2" type="fixed"><parent>collar</parent><child>barrel</child></joint>
+      <joint name="j3" type="fixed"><parent>barrel</parent><child>copper_tip</child></joint>
+      <joint name="j4" type="fixed"><parent>copper_tip</parent><child>tip_dot</child></joint>
+    </model>
+
+    <!-- Blocking plate: 12cm x 12cm x 4cm (smaller so beam can go around it)  -->
+    <!-- Starts far away at y=0.35. box_mover will sweep it over tool tip.       -->
+    <!-- Bottom of plate at z=0.07, tip at z=0.012 → 5.8cm clear gap above tip  -->
+    <model name="blocking_box">
+      <static>false</static>
+      <pose>0.35 0.35 0.09 0 0 0</pose>
+      <link name="plate_link">
+        <visual name="v">
+          <geometry>
+            <box><size>0.12 0.12 0.04</size></box>
+          </geometry>
+          <material>
+            <ambient>0.90 0.05 0.05 1</ambient>
+            <diffuse>0.95 0.05 0.05 1</diffuse>
+            <specular>0.3 0.0 0.0 1</specular>
+          </material>
+        </visual>
+        <collision name="c">
+          <geometry><box><size>0.12 0.12 0.04</size></box></geometry>
+        </collision>
+        <inertial>
+          <mass>0.2</mass>
+          <inertia>
+            <ixx>0.0004</ixx><ixy>0</ixy><ixz>0</ixz>
+            <iyy>0.0004</iyy><iyz>0</iyz><izz>0.0008</izz>
+          </inertia>
+        </inertial>
+      </link>
+    </model>
+
+  </world>
+</sdf>

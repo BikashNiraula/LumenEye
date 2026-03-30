@@ -1,0 +1,508 @@
+<joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="lss_arm_link_0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 0 (Base)         -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_0.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_0.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0.00785 0.0256" rpy="0 0 0"/>
+      <mass value="0.0717"/>
+      <inertia ixx="3.06e-05" ixy="0" ixz="0" iyy="2.37e-05" iyz="2.14e-07" izz="4.37e-05"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 1 (Base Rotation) -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_1" type="revolute">
+    <parent link="lss_arm_link_0"/>
+    <child link="lss_arm_link_1"/>
+    <origin xyz="0 0 0.0427" rpy="1.5708 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 1                -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_1">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_1.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_1.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0.0348 0.00015" rpy="0 0 0"/>
+      <mass value="0.0629"/>
+      <inertia ixx="2.5e-05" ixy="0" ixz="0" iyy="1.8e-05" iyz="0" izz="2.5e-05"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 2 (Shoulder)    -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_2" type="revolute">
+    <parent link="lss_arm_link_1"/>
+    <child link="lss_arm_link_2"/>
+    <origin xyz="0 0.0588 0" rpy="0 0 -1.3621"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.18" upper="2.18" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 2                -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_2">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_2.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_2.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.075 0.027 0" rpy="0 0 0"/>
+      <mass value="0.0856"/>
+      <inertia ixx="2.0e-05" ixy="0" ixz="0" iyy="1.5e-04" iyz="0" izz="1.5e-04"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 3 (Elbow)       -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_3" type="revolute">
+    <parent link="lss_arm_link_2"/>
+    <child link="lss_arm_link_3"/>
+    <origin xyz="-0.12954806230389 0.0533975613048809 0" rpy="0 0 1.02985068022995"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.92" upper="1.57" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 3                -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_3">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_3.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_3.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.077 0.027 0" rpy="0 0 0"/>
+      <mass value="0.0752"/>
+      <inertia ixx="1.8e-05" ixy="0" ixz="0" iyy="1.2e-04" iyz="0" izz="1.2e-04"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 4 (Wrist)       -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_4" type="revolute">
+    <parent link="lss_arm_link_3"/>
+    <child link="lss_arm_link_4"/>
+    <origin xyz="0.1543 0.0532 0" rpy="0 0 0.3323"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.0" upper="2.0" effort="6.5" velocity="6.283"/>
+    <dynamics damping="0.1" friction="0.1"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Link 4 (Gripper Base) -->
+  <!-- ===================== -->
+  <link name="lss_arm_link_4">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/link_4_4dof.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/link_4_4dof.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.025 0 0" rpy="0 0 0"/>
+      <mass value="0.045"/>
+      <inertia ixx="1.0e-05" ixy="0" ixz="0" iyy="1.0e-05" iyz="0" izz="1.0e-05"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 5 (Gripper Left) -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_5" type="revolute">
+    <parent link="lss_arm_link_4"/>
+    <child link="lss_arm_finger_l"/>
+    <origin xyz="0.0508 -0.00274 -0.0124" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.8" effort="1.45" velocity="6.283"/>
+    <dynamics damping="0.05" friction="0.05"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Left Finger           -->
+  <!-- ===================== -->
+  <link name="lss_arm_finger_l">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/finger_l.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/finger_l.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.02 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1.0e-06" ixy="0" ixz="0" iyy="1.0e-06" iyz="0" izz="1.0e-06"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- Joint 6 (Gripper Right - Mimic) -->
+  <!-- ===================== -->
+  <joint name="lss_arm_joint_6" type="revolute">
+    <parent link="lss_arm_link_4"/>
+    <child link="lss_arm_finger_r"/>
+    <origin xyz="0.0508 -0.00274 0.0124" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.8" upper="0" effort="1.45" velocity="6.283"/>
+    <dynamics damping="0.05" friction="0.05"/>
+    <mimic joint="lss_arm_joint_5" multiplier="-1" offset="0"/>
+  </joint>
+
+  <!-- ===================== -->
+  <!-- Right Finger          -->
+  <!-- ===================== -->
+  <link name="lss_arm_finger_r">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/visual/finger_r.STL"/>
+      </geometry>
+      <material name="DarkGrey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://lss_arm_description/meshes/collision/finger_r.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.02 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1.0e-06" ixy="0" ixz="0" iyy="1.0e-06" iyz="0" izz="1.0e-06"/>
+    </inertial>
+  </link>
+
+  <!-- ===================== -->
+  <!-- End Effector          -->
+  <!-- FIX: moved to x=0.04 so it no longer shares origin with lamp_tilt_joint (x=0.09).
+       The EE frame is kept close to link_4 for IK purposes; the lamp chain
+       continues further along the same axis via lamp_tilt_joint.          -->
+  <!-- ===================== -->
+  <joint name="lss_arm_ee_joint" type="fixed">
+    <parent link="lss_arm_link_4"/>
+    <child link="lss_arm_ee"/>
+    <origin xyz="0.04 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="lss_arm_ee"/>
+
+  <!-- ============================================ -->
+  <!-- LAMP TILT JOINT                             -->
+  <!-- Parented to link_4 at x=0.09 (distinct     -->
+  <!-- from ee_joint at x=0.04 — no clash).        -->
+  <!-- Rotates around Y to pitch the lamp head     -->
+  <!-- toward the tool tip.                        -->
+  <!-- ============================================ -->
+  <joint name="lamp_tilt_joint" type="revolute">
+    <parent link="lss_arm_link_4"/>
+    <child link="lamp_tilt_link"/>
+    <origin xyz="0.09 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="2.0" velocity="3.0"/>
+    <dynamics damping="0.05" friction="0.05"/>
+  </joint>
+
+  <link name="lamp_tilt_link">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7"/>
+    </inertial>
+  </link>
+
+  <!-- ============================================ -->
+  <!-- LAMP HEAD (Yellow cylinder)                 -->
+  <!-- Parented to lamp_tilt_link.                 -->
+  <!-- ============================================ -->
+  <joint name="lamp_head_joint" type="fixed">
+    <parent link="lamp_tilt_link"/>
+    <child link="lamp_head"/>
+    <origin xyz="0.02 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="lamp_head">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.035" length="0.018"/>
+      </geometry>
+      <material name="LampYellow">
+        <color rgba="1.0 0.95 0.1 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.035" length="0.018"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="lamp_tilt_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+
+  <gazebo reference="lamp_head">
+    <material>Gazebo/Yellow</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+
+  <!-- ============================================ -->
+  <!-- LAMP CAMERA (black box on lamp)             -->
+  <!-- ============================================ -->
+  <joint name="lamp_camera_joint" type="fixed">
+    <parent link="lamp_head"/>
+    <child link="lamp_camera_link"/>
+    <origin xyz="0.01 0 0" rpy="0 -1.5708 0"/>
+  </joint>
+
+  <link name="lamp_camera_link">
+    <visual>
+      <geometry>
+        <box size="0.015 0.022 0.012"/>
+      </geometry>
+      <material name="CamBlack">
+        <color rgba="0.05 0.05 0.05 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.022 0.012"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="lamp_camera_link">
+    <material>Gazebo/Black</material>
+    <sensor type="camera" name="lamp_camera">
+      <update_rate>30</update_rate>
+      <camera name="lamp_cam">
+        <horizontal_fov>1.047</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>8.0</far>
+        </clip>
+      </camera>
+      <plugin name="lamp_camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30.0</updateRate>
+        <cameraName>lamp_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>lamp_camera_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================================ -->
+  <!-- LAMP SPOT LIGHT                             -->
+  <!-- ============================================ -->
+  <gazebo reference="lamp_head">
+    <light name="lamp_spot_light" type="spot">
+      <pose>0 0 0 0 -1.5708 0</pose>
+      <diffuse>1.0 1.0 0.85 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <attenuation>
+        <range>4.0</range>
+        <constant>0.4</constant>
+        <linear>0.05</linear>
+        <quadratic>0.01</quadratic>
+      </attenuation>
+      <direction>1 0 0</direction>
+      <spot>
+        <inner_angle>0.5</inner_angle>
+        <outer_angle>1.2</outer_angle>
+        <falloff>1.5</falloff>
+      </spot>
+      <cast_shadows>true</cast_shadows>
+    </light>
+  </gazebo>
+
+  <!-- ============================================ -->
+  <!-- GAZEBO CLASSIC SPECIFIC CONFIGURATIONS      -->
+  <!-- ============================================ -->
+
+  <gazebo reference="lss_arm_link_0">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_1">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_2">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_3">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_link_4">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_finger_l">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+  <gazebo reference="lss_arm_finger_r">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
+
+  <!-- ============================================ -->
+  <!-- ROS2 CONTROL HARDWARE INTERFACE             -->
+  <!-- FIX: lamp_tilt_joint entry moved here,      -->
+  <!-- AFTER the joint is defined in the URDF tree.-->
+  <!-- Parser requires the joint to exist before   -->
+  <!-- it can be referenced in ros2_control.       -->
+  <!-- ============================================ -->
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="lss_arm_joint_1">
+      <command_interface name="position">
+        <param name="min">-3.14159</param>
+        <param name="max">3.14159</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="lss_arm_joint_2">
+      <command_interface name="position">
+        <param name="min">-2.18</param>
+        <param name="max">2.18</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="lss_arm_joint_3">
+      <command_interface name="position">
+        <param name="min">-1.92</param>
+        <param name="max">1.57</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="lss_arm_joint_4">
+      <command_interface name="position">
+        <param name="min">-2.0</param>
+        <param name="max">2.0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="lss_arm_joint_5">
+      <command_interface name="position">
+        <param name="min">0</param>
+        <param name="max">0.8</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="lss_arm_joint_6">
+      <command_interface name="position">
+        <param name="min">-0.8</param>
+        <param name="max">0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <!-- lamp_tilt_joint: defined above in URDF tree before this block -->
+    <joint name="lamp_tilt_joint">
+      <command_interface name="position">
+        <param name="min">-1.5708</param>
+        <param name="max">1.5708</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <parameters>/home/bikash/rosProjects/LumenEye/robotics_new/robotics/install/lss_arm_gazebo/share/lss_arm_gazebo/config/ros2_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+</robot>

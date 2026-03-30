@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""
+Box Mover — RViz version (no Gazebo).
+Publishes box position to /lumeneye/box_pose and /lumeneye/box_state only.
+Identical movement logic, just removes SetEntityState Gazebo service.
+"""
+import math
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Point
+from std_msgs.msg import Bool, String
+
+BOX_Z = 0.09
+
+def eq(r, p, y):
+    cr,sr = math.cos(r/2), math.sin(r/2)
+    cp,sp = math.cos(p/2), math.sin(p/2)
+    cy,sy = math.cos(y/2), math.sin(y/2)
+    return (sr*cp*cy - cr*sp*sy, cr*sp*cy + sr*cp*sy,
+            cr*cp*sy - sr*sp*cy, cr*cp*cy + sr*sp*sy)
+
+SCENARIOS = [
+    (0.35,  0.38, 0.35, 0.01, eq(0,0,0),      'Flat from +Y'),
+    (0.35, -0.38, 0.35,-0.01, eq(0.40,0,0),   'Tilted 23deg from -Y'),
+    (0.54,  0.28, 0.35, 0.01, eq(0,0,0.65),   'Diagonal 37deg yaw'),
+    (0.35,  0.38, 0.35, 0.01, eq(0,0.30,0),   'Pitched 17deg fwd'),
+    (0.14,  0.02, 0.34, 0.00, eq(0.25,0,0.25),'Combined tilt -X'),
+]
+SW = 0.018
+RT = 0.12
+
+class BoxMover(Node):
+    def __init__(self):
+        super().__init__('box_mover')
+        self.allow = False
+        self.state = 'SWEEP'
+        self.si = 0
+        self.sc = SCENARIOS[0]
+        self.cx = self.sc[0]
+        self.cy = self.sc[1]
+
+        self.pos_pub = self.create_publisher(Point,  '/lumeneye/box_pose',  10)
+        self.st_pub  = self.create_publisher(String, '/lumeneye/box_state', 10)
+        self.create_subscription(Bool, '/lumeneye/plate_allow', self._al, 10)
+        self.create_timer(0.2, self._tick)
+        self.get_logger().info('Box mover ready (RViz mode)')
+
+    def _al(self, m):
+        was = self.allow
+        self.allow = m.data
+        if m.data and not was:
+            self.get_logger().info('[BOX] plate_allow=TRUE → sweeping')
+        elif not m.data and was:
+            self.get_logger().info('[BOX] plate_allow=FALSE → holding')
+
+    def _load(self, i):
+        self.sc = SCENARIOS[i]
+        self.cx = self.sc[0]
+        self.cy = self.sc[1]
+        self.state = 'SWEEP'
+        self.get_logger().info(f'[BOX] Scenario {i}: {self.sc[5]}')
+
+    def _tick(self):
+        sc = self.sc
+        sx, sy, ex, ey = sc[0], sc[1], sc[2], sc[3]
+
+        if not self.allow:
+            st = 'BLOCKING' if self.state == 'AT' else 'MOVING'
+            self.st_pub.publish(String(data=st))
+            self.pos_pub.publish(Point(x=self.cx, y=self.cy, z=BOX_Z))
+            return
+
+        if self.state == 'SWEEP':
+            dx, dy = ex - self.cx, ey - self.cy
+            d = math.sqrt(dx*dx + dy*dy)
+            if d > SW:
+                self.cx += dx/d * SW
+                self.cy += dy/d * SW
+            else:
+                self.cx, self.cy = ex, ey
+                self.state = 'AT'
+                self.get_logger().warn(f'[BOX] BLOCKING at ({ex:.2f},{ey:.2f})')
+            self.st_pub.publish(String(data='MOVING'))
+
+        elif self.state == 'AT':
+            self.st_pub.publish(String(data='BLOCKING'))
+
+        elif self.state == 'BACK':
+            dx, dy = sx - self.cx, sy - self.cy
+            d = math.sqrt(dx*dx + dy*dy)
+            if d > RT:
+                self.cx += dx/d * RT
+                self.cy += dy/d * RT
+            else:
+                self.cx, self.cy = sx, sy
+                nxt = (self.si + 1) % len(SCENARIOS)
+                self.si = nxt
+                self._load(nxt)
+            self.st_pub.publish(String(data='MOVING'))
+
+        self.pos_pub.publish(Point(x=self.cx, y=self.cy, z=BOX_Z))
+
+def main(args=None):
+    rclpy.init(args=args)
+    n = BoxMover()
+    try:
+        rclpy.spin(n)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        n.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

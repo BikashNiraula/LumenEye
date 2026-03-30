@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""LumenEye Perception — correct colors + cone viz"""
+import math
+import numpy as np
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile,ReliabilityPolicy,HistoryPolicy,DurabilityPolicy
+from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Point as GPoint
+from std_msgs.msg import String,Bool,ColorRGBA
+from visualization_msgs.msg import Marker,MarkerArray
+
+TOOL_TIP=np.array([0.35,0.0,0.012])
+BOX_HALF=np.array([0.06,0.06,0.02])
+CONE_DEG=25.0
+JOINT_NAMES=['lss_arm_joint_1','lss_arm_joint_2','lss_arm_joint_3','lss_arm_joint_4','lss_arm_joint_lamp_tilt']
+
+def _Rx(a):
+    c,s=math.cos(a),math.sin(a); return np.array([[1,0,0],[0,c,-s],[0,s,c]],dtype=float)
+def _Ry(a):
+    c,s=math.cos(a),math.sin(a); return np.array([[c,0,s],[0,1,0],[-s,0,c]],dtype=float)
+def _Rz(a):
+    c,s=math.cos(a),math.sin(a); return np.array([[c,-s,0],[s,c,0],[0,0,1]],dtype=float)
+def _rpy(r,p,y): return _Rz(y)@_Ry(p)@_Rx(r)
+def _T(R,t):
+    M=np.eye(4); M[:3,:3]=R; M[:3,3]=np.asarray(t,dtype=float); return M
+
+def fk(q1,q2,q3,q4,q_tilt):
+    """
+    Full FK: arm (j1-j4) + lamp_head tilt joint (axis Z in lamp_mount frame).
+    lamp_mount is fixed at xyz=0.11 along link_4 X.
+    lamp_head rotates around Z of lamp_mount by q_tilt.
+    beam_dir = +X axis of lamp_head in world frame (face normal of the cylinder).
+    """
+    # ── Arm chain (link_0 → link_4) ──────────────────────────────────
+    T=np.eye(4)
+    T=T@_T(_rpy(1.5708,0,0),[0,0,0.0427])@_T(_Ry(q1),[0,0,0])
+    T=T@_T(_rpy(0,0,-1.3621),[0,0.0588,0])@_T(_Rz(q2),[0,0,0])
+    T=T@_T(_rpy(0,0,1.02985),[-0.12954806,0.05339756,0])@_T(_Rz(q3),[0,0,0])
+    T=T@_T(_rpy(0,0,0.3323),[0.1543,0.0532,0])@_T(_Rz(q4),[0,0,0])
+    # ── lamp_mount (fixed: translate 0.11 along link_4 X) ────────────
+    T=T@_T(np.eye(3),[0.11,0,0])
+    # ── lamp_head tilt joint (revolute, axis Z of lamp_mount) ────────
+    T=T@_T(_Rz(q_tilt),[0,0,0])
+    # lamp position = origin of lamp_head
+    pos=T[:3,3].copy()
+    # beam = +X axis of lamp_head in world (face normal points along +X)
+    beam=T[:3,0].copy()
+    n=np.linalg.norm(beam)
+    if n>1e-9: beam/=n
+    return pos,beam
+
+def ray_blocked(lamp,tip,bc,bh):
+    d=tip-lamp; t0,t1=0.0,1.0
+    for i in range(3):
+        if abs(d[i])<1e-9:
+            if lamp[i]<bc[i]-bh[i] or lamp[i]>bc[i]+bh[i]: return False
+            continue
+        a=(bc[i]-bh[i]-lamp[i])/d[i]; b=(bc[i]+bh[i]-lamp[i])/d[i]
+        if a>b: a,b=b,a
+        t0=max(t0,a); t1=min(t1,b)
+        if t0>t1: return False
+    return True
+
+class PerceptionNode(Node):
+    def __init__(self):
+        super().__init__('perception_node')
+        self.box_pos=None; self.lamp_pos=None; self.lamp_beam=None
+        self.cur_q={n:0.0 for n in JOINT_NAMES}; self.got_j=False
+        self.last_status=None; self.lamp_adj=False; self.box_state='MOVING'
+
+        self.create_subscription(JointState,'/joint_states',self._js,10)
+        self.create_subscription(GPoint,'/lumeneye/box_pose',self._bp,10)
+        self.create_subscription(String,'/lumeneye/box_state',self._bs,10)
+        self.create_subscription(Bool,'/lumeneye/lamp_adjusting',self._la,10)
+        self.status_pub=self.create_publisher(String,'/lumeneye/status',10)
+        self.marker_pub=self.create_publisher(MarkerArray,'/lumeneye/markers',10)
+        self.create_timer(0.4,self._check)
+        self.create_timer(0.1,self._draw)
+        self.get_logger().info('Perception started (uses /joint_states for FK)')
+
+    def _js(self,m):
+        for i,n in enumerate(m.name):
+            if n in self.cur_q and i<len(m.position):
+                self.cur_q[n]=m.position[i]
+        self.got_j=True
+        # q is now 5 values: j1,j2,j3,j4,q_tilt
+        q=[self.cur_q[n] for n in JOINT_NAMES]
+        p,b=fk(*q); self.lamp_pos=p; self.lamp_beam=b
+
+    def _bp(self,m): self.box_pos=np.array([m.x,m.y,m.z])
+    def _bs(self,m): self.box_state=m.data
+    def _la(self,m): self.lamp_adj=m.data
+
+    def _check(self):
+        if not self.got_j or self.box_pos is None:
+            self.get_logger().warn('Waiting...',throttle_duration_sec=3.0); return
+        if self.lamp_adj:
+            self._pub('CLEAR','[Lamp adjusting]'); return
+        lamp=self.lamp_pos; beam=self.lamp_beam
+        blk=ray_blocked(lamp,TOOL_TIP,self.box_pos,BOX_HALF)
+        lx,ly,lz=lamp; bx,by,bz=self.box_pos
+        q=[self.cur_q[n] for n in JOINT_NAMES]
+        j1d=math.degrees(q[0])
+        tiltd=math.degrees(q[4])
+        extra=(f'j1={j1d:+.0f}° tilt={tiltd:+.1f}° lamp=({lx:.2f},{ly:.2f},{lz:.2f})'
+               f' box=({bx:.2f},{by:.2f},{bz:.2f})'
+               f' ray={"BLOCKED" if blk else "CLEAR"}')
+        self._pub('BLOCKED' if blk else 'CLEAR',extra)
+
+    def _pub(self,status,extra=''):
+        self.status_pub.publish(String(data=status))
+        if status!=self.last_status:
+            if status=='CLEAR':
+                self.get_logger().info('='*52)
+                self.get_logger().info('  ✓  BEAM CLEAR — LIGHT REACHES TIP  ✓')
+                self.get_logger().info('='*52)
+            else:
+                self.get_logger().warn('!'*52)
+                self.get_logger().warn('  !!!  SHADOW — BEAM BLOCKED  !!!')
+                self.get_logger().warn('!'*52)
+        if status=='CLEAR': self.get_logger().info(f'[CLEAR] {extra}')
+        else: self.get_logger().warn(f'[BLOCKED] {extra}')
+        self.last_status=status
+
+    def _draw(self):
+        if self.box_pos is None: return
+        arr=MarkerArray(); now=self.get_clock().now().to_msg()
+        is_clear=(self.last_status!='BLOCKED' or self.lamp_adj)
+
+        # Green tip
+        m=Marker(); m.header.frame_id='world'; m.header.stamp=now
+        m.ns='le'; m.id=0; m.type=Marker.SPHERE; m.action=Marker.ADD
+        m.pose.position.x=float(TOOL_TIP[0]); m.pose.position.y=float(TOOL_TIP[1])
+        m.pose.position.z=float(TOOL_TIP[2]); m.pose.orientation.w=1.0
+        m.scale.x=m.scale.y=m.scale.z=0.025
+        m.color=ColorRGBA(r=0.0,g=1.0,b=0.0,a=1.0)
+        m.lifetime.sec=1; arr.markers.append(m)
+
+        # Box: YELLOW=moving, ORANGE=adjusting, RED=blocked
+        m2=Marker(); m2.header.frame_id='world'; m2.header.stamp=now
+        m2.ns='le'; m2.id=2; m2.type=Marker.CUBE; m2.action=Marker.ADD
+        m2.pose.position.x=float(self.box_pos[0])
+        m2.pose.position.y=float(self.box_pos[1])
+        m2.pose.position.z=float(self.box_pos[2])
+        m2.pose.orientation.w=1.0
+        m2.scale.x=0.12; m2.scale.y=0.12; m2.scale.z=0.04
+        if self.lamp_adj:
+            m2.color=ColorRGBA(r=1.0,g=0.45,b=0.0,a=0.95)   # ORANGE
+        elif self.last_status=='BLOCKED':
+            m2.color=ColorRGBA(r=1.0,g=0.0,b=0.0,a=0.95)    # RED
+        else:
+            m2.color=ColorRGBA(r=1.0,g=0.85,b=0.0,a=0.85)   # YELLOW
+        m2.lifetime.sec=1; arr.markers.append(m2)
+
+        if self.lamp_pos is not None:
+            lamp=self.lamp_pos; tip=TOOL_TIP
+
+            # Beam arrow: lamp → tool tip
+            m3=Marker(); m3.header.frame_id='world'; m3.header.stamp=now
+            m3.ns='le'; m3.id=3; m3.type=Marker.ARROW; m3.action=Marker.ADD
+            m3.points=[GPoint(x=float(lamp[0]),y=float(lamp[1]),z=float(lamp[2])),
+                       GPoint(x=float(tip[0]),y=float(tip[1]),z=float(tip[2]))]
+            m3.scale.x=0.008; m3.scale.y=0.018; m3.scale.z=0.02
+            if is_clear:
+                m3.color=ColorRGBA(r=1.0,g=1.0,b=0.0,a=1.0)   # bright yellow
+            else:
+                m3.color=ColorRGBA(r=0.35,g=0.35,b=0.35,a=0.7) # grey
+            m3.lifetime.sec=1; arr.markers.append(m3)
+
+            # Beam direction arrow: shows actual lamp_head face direction
+            if self.lamp_beam is not None:
+                beam_end=lamp+self.lamp_beam*0.12   # 12 cm arrow showing beam axis
+                m4=Marker(); m4.header.frame_id='world'; m4.header.stamp=now
+                m4.ns='le'; m4.id=4; m4.type=Marker.ARROW; m4.action=Marker.ADD
+                m4.points=[GPoint(x=float(lamp[0]),y=float(lamp[1]),z=float(lamp[2])),
+                           GPoint(x=float(beam_end[0]),y=float(beam_end[1]),z=float(beam_end[2]))]
+                m4.scale.x=0.005; m4.scale.y=0.012; m4.scale.z=0.015
+                # White when aligned, red when misaligned
+                to_tip=tip-lamp; d=np.linalg.norm(to_tip)
+                align=float(np.dot(self.lamp_beam,to_tip/d)) if d>1e-6 else 0.0
+                if align>0.95:
+                    m4.color=ColorRGBA(r=1.0,g=1.0,b=1.0,a=0.9)  # white = well aligned
+                else:
+                    m4.color=ColorRGBA(r=1.0,g=0.2,b=0.2,a=0.8)  # red = misaligned
+                m4.lifetime.sec=1; arr.markers.append(m4)
+
+            # Light CONE (visible only when clear)
+            if is_clear and self.lamp_beam is not None:
+                dist=float(np.linalg.norm(tip-lamp))
+                if dist>0.01:
+                    main=(tip-lamp)/dist
+                    up=np.array([0.,0.,1.])
+                    if abs(float(np.dot(main,up)))>0.95: up=np.array([1.,0.,0.])
+                    p1=np.cross(main,up); p1/=np.linalg.norm(p1)+1e-9
+                    p2=np.cross(main,p1); p2/=np.linalg.norm(p2)+1e-9
+                    half=math.radians(CONE_DEG)
+                    for k in range(8):
+                        a2=2*math.pi*k/8
+                        rd=math.cos(half)*main+math.sin(half)*(math.cos(a2)*p1+math.sin(a2)*p2)
+                        re=lamp+dist*rd
+                        cr=Marker(); cr.header.frame_id='world'; cr.header.stamp=now
+                        cr.ns='le'; cr.id=20+k; cr.type=Marker.ARROW; cr.action=Marker.ADD
+                        cr.points=[GPoint(x=float(lamp[0]),y=float(lamp[1]),z=float(lamp[2])),
+                                   GPoint(x=float(re[0]),y=float(re[1]),z=float(re[2]))]
+                        cr.scale.x=0.003; cr.scale.y=0.007; cr.scale.z=0.01
+                        cr.color=ColorRGBA(r=1.0,g=0.95,b=0.2,a=0.45)
+                        cr.lifetime.sec=1; arr.markers.append(cr)
+                    # Glow dots
+                    for i in range(1,10):
+                        fr=i/10.0; pt=lamp+fr*(tip-lamp)
+                        gd=Marker(); gd.header.frame_id='world'; gd.header.stamp=now
+                        gd.ns='le'; gd.id=30+i; gd.type=Marker.SPHERE; gd.action=Marker.ADD
+                        gd.pose.position.x=float(pt[0]); gd.pose.position.y=float(pt[1])
+                        gd.pose.position.z=float(pt[2]); gd.pose.orientation.w=1.0
+                        r=0.013*(1-fr*0.6); gd.scale.x=gd.scale.y=gd.scale.z=r
+                        gd.color=ColorRGBA(r=1.0,g=1.0,b=0.3,a=0.4*(1-fr*0.5))
+                        gd.lifetime.sec=1; arr.markers.append(gd)
+        self.marker_pub.publish(arr)
+
+def main(args=None):
+    rclpy.init(args=args); n=PerceptionNode()
+    try: rclpy.spin(n)
+    except KeyboardInterrupt: pass
+    finally: n.destroy_node(); rclpy.shutdown()
+
+if __name__=='__main__': main()
